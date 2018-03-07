@@ -25,6 +25,11 @@ namespace Rhisis.Database
         public IRepository<Item> Items { get; }
 
         /// <summary>
+        /// Gets the <see cref="Friend"/> repository.
+        /// </summary>
+        public IRepository<Friend> Friends { get; }
+
+        /// <summary>
         /// Gets the <see cref="DatabaseContext"/> configuration.
         /// </summary>
         protected DatabaseConfiguration Configuration { get; private set; }
@@ -35,6 +40,8 @@ namespace Rhisis.Database
 
         internal DbSet<Item> ItemsDbSet { get; set; }
 
+        internal DbSet<Friend> FriendsDbSet { get; set; }
+
         /// <summary>
         /// Creates a new <see cref="DatabaseContext"/> instance.
         /// </summary>
@@ -44,6 +51,7 @@ namespace Rhisis.Database
             this.Users = new UserRepository(this);
             this.Characters = new CharacterRepository(this);
             this.Items = new ItemRepository(this);
+            this.Friends = new FriendRepository(this);
 
             this.Configuration = configuration;
         }

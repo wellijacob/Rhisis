@@ -10,6 +10,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using Rhisis.World.Game.Chat;
+using Rhisis.World.Game.Core;
 using Rhisis.World.Systems;
 
 namespace Rhisis.World
@@ -34,6 +35,11 @@ namespace Rhisis.World
         public static IReadOnlyDictionary<int, ItemData> Items => ItemsData as IReadOnlyDictionary<int, ItemData>;
 
         /// <summary>
+        /// Gets the global server context.
+        /// </summary>
+        public static readonly IContext GlobalContext = new Context();
+
+        /// <summary>
         /// Loads the server's resources.
         /// </summary>
         private void LoadResources()
@@ -45,6 +51,7 @@ namespace Rhisis.World
             this.LoadMovers();
             this.LoadItems();
             this.LoadMaps();
+            this.LoadGlobalContext();
             this.CleanUp();
 
             var time = Profiler.Stop("LoadResources");
@@ -129,7 +136,7 @@ namespace Rhisis.World
         private void LoadMaps()
         {
             Logger.Loading("Loading maps...\t\t");
-            IEnumerable<Type> systemTypes = this.LoadSystems();
+            IEnumerable<Type> systemTypes = this.LoadSystems<SystemAttribute>();
             IDictionary<string, string> worldsPaths = this.LoadWorldScript();
 
             foreach (string mapId in this.WorldConfiguration.Maps)
@@ -159,13 +166,22 @@ namespace Rhisis.World
             Logger.Info("{0} maps loaded! \t\t", _maps.Count);
         }
 
-        private IEnumerable<Type> LoadSystems()
+        private void LoadGlobalContext()
+        {
+            Logger.Loading("Loading global context...\t\t");
+            IEnumerable<Type> systemTypes = this.LoadSystems<GlobalSystemAttribute>();
+
+            foreach (Type type in systemTypes)
+                GlobalContext.AddSystem(Activator.CreateInstance(type, GlobalContext) as ISystem);
+        }
+
+        private IEnumerable<Type> LoadSystems<TAttribute>() where TAttribute : Attribute
         {
             ChatSystem.InitializeCommands();
 
             return Assembly.GetExecutingAssembly()
                 .GetTypes()
-                .Where(x => x.GetTypeInfo().GetCustomAttribute<SystemAttribute>() != null && typeof(ISystem).IsAssignableFrom(x));
+                .Where(x => x.GetTypeInfo().GetCustomAttribute<TAttribute>() != null && typeof(ISystem).IsAssignableFrom(x));
         }
 
         private IDictionary<string, string> LoadWorldScript()

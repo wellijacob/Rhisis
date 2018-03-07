@@ -69,10 +69,13 @@ namespace Rhisis.Database.Structures
         public User User { get; set; }
 
         public ICollection<Item> Items { get; set; }
+
+        public ICollection<Friend> Friends { get; set; }
         
         public Character()
         {
             this.Items = new HashSet<Item>();
+            this.Friends = new HashSet<Friend>();
         }
     }
 }

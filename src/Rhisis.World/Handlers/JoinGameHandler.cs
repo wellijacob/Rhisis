@@ -11,6 +11,7 @@ using Rhisis.World.Game.Components;
 using Rhisis.World.Game.Entities;
 using Rhisis.World.Packets;
 using Rhisis.World.Systems;
+using Rhisis.World.Systems.Events.Friend;
 using Rhisis.World.Systems.Events.Inventory;
 
 namespace Rhisis.World.Handlers
@@ -44,6 +45,7 @@ namespace Rhisis.World.Handlers
 
             // 1st: Create the player entity with the map context
             client.Player = map.Context.CreateEntity<PlayerEntity>();
+            WorldServer.GlobalContext.AddEntity(client.Player);
 
             // 2nd: create and initialize the components
             client.Player.ObjectComponent = new ObjectComponent
@@ -84,6 +86,10 @@ namespace Rhisis.World.Handlers
 
             client.Player.StatisticsComponent = new StatisticsComponent(character);
 
+            // Initialize friends
+            client.Player.Context.NotifySystem<FriendSystem>(client.Player,
+                new FriendEventArgs(FriendActionType.Initialize, character.Friends));
+
             client.Player.Connection = client;
 
             // Initialize the inventory
@@ -95,6 +101,9 @@ namespace Rhisis.World.Handlers
 
             // 4th: player is now spawned
             client.Player.ObjectComponent.Spawned = true;
+
+            // 5th : add it to playerdatasystem if not already
+            PlayerDataSystem.AddPlayer(client.Player);
         }
     }
 }

@@ -13,7 +13,9 @@ namespace Rhisis.World.Game.Entities
         ItemContainerComponent InventoryComponent { get; set; }
 
         StatisticsComponent StatisticsComponent { get; set; }
-        
+
+        FriendComponent FriendsComponent { get; set; }
+
         NetConnection Connection { get; set; }
     }
 }

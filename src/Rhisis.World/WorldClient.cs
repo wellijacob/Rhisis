@@ -12,6 +12,8 @@ using Rhisis.World.Game.Entities;
 using Rhisis.World.Systems;
 using System.Collections.Generic;
 using System.Linq;
+using Rhisis.Database.Structures;
+using Rhisis.World.Game.Structures;
 using Rhisis.World.Packets;
 
 namespace Rhisis.World
@@ -94,74 +96,92 @@ namespace Rhisis.World
             using (var db = DatabaseService.GetContext())
             {
                 var character = db.Characters.Get(this.Player.PlayerComponent.Id);
+                if (character == null)
+                    return;
 
-                if (character != null)
+                character.PosX = this.Player.ObjectComponent.Position.X;
+                character.PosY = this.Player.ObjectComponent.Position.Y;
+                character.PosZ = this.Player.ObjectComponent.Position.Z;
+                character.Angle = this.Player.ObjectComponent.Angle;
+                character.MapId = this.Player.ObjectComponent.MapId;
+                character.Gender = this.Player.HumanComponent.Gender;
+                character.HairColor = this.Player.HumanComponent.HairColor;
+                character.HairId = this.Player.HumanComponent.HairId;
+                character.FaceId = this.Player.HumanComponent.FaceId;
+                character.SkinSetId = this.Player.HumanComponent.SkinSetId;
+                character.Level = this.Player.ObjectComponent.Level;
+
+                character.Strength = this.Player.StatisticsComponent.Strenght;
+                character.Stamina = this.Player.StatisticsComponent.Stamina;
+                character.Dexterity = this.Player.StatisticsComponent.Dexterity;
+                character.Intelligence = this.Player.StatisticsComponent.Intelligence;
+                character.StatPoints = this.Player.StatisticsComponent.StatPoints;
+
+                // Save inventory
+
+                // Delete items
+                for (int i = character.Items.Count - 1; i > 0; i--)
                 {
-                    character.PosX = this.Player.ObjectComponent.Position.X;
-                    character.PosY = this.Player.ObjectComponent.Position.Y;
-                    character.PosZ = this.Player.ObjectComponent.Position.Z;
-                    character.Angle = this.Player.ObjectComponent.Angle;
-                    character.MapId = this.Player.ObjectComponent.MapId;
-                    character.Gender = this.Player.HumanComponent.Gender;
-                    character.HairColor = this.Player.HumanComponent.HairColor;
-                    character.HairId = this.Player.HumanComponent.HairId;
-                    character.FaceId = this.Player.HumanComponent.FaceId;
-                    character.SkinSetId = this.Player.HumanComponent.SkinSetId;
-                    character.Level = this.Player.ObjectComponent.Level;
+                    var dbItem = character.Items.ElementAt(i);
+                    var inventoryItem = this.Player.InventoryComponent.GetItemBySlot(dbItem.ItemSlot);
 
-                    character.Strength = this.Player.StatisticsComponent.Strenght;
-                    character.Stamina = this.Player.StatisticsComponent.Stamina;
-                    character.Dexterity = this.Player.StatisticsComponent.Dexterity;
-                    character.Intelligence = this.Player.StatisticsComponent.Intelligence;
-                    character.StatPoints = this.Player.StatisticsComponent.StatPoints;
-
-                    // Save inventory
-
-                    // Delete items
-                    for (int i = character.Items.Count - 1; i > 0; i--)
-                    {
-                        var dbItem = character.Items.ElementAt(i);
-                        var inventoryItem = this.Player.InventoryComponent.GetItemBySlot(dbItem.ItemSlot);
-
-                        if (inventoryItem != null && inventoryItem.Id == -1)
-                            character.Items.Remove(dbItem);
+                    if (inventoryItem != null && inventoryItem.Id == -1)
+                        character.Items.Remove(dbItem);
                         
-                    }
+                }
 
-                    // Add or update items
-                    foreach (var item in this.Player.InventoryComponent.Items)
+                // Add or update items
+                foreach (var item in this.Player.InventoryComponent.Items)
+                {
+                    if (item.Id == -1)
+                        continue;
+                    
+                    var dbItem = character.Items.FirstOrDefault(x => x.ItemId == item.Id);
+
+                    if (dbItem != null)
                     {
-                        if (item.Id != -1)
-                        {
-                            var dbItem = character.Items.FirstOrDefault(x => x.ItemId == item.Id);
-
-                            if (dbItem != null)
-                            {
-                                dbItem.ItemId = item.Id;
-                                dbItem.ItemCount = item.Quantity;
-                                dbItem.ItemSlot = item.Slot;
-                                dbItem.Refine = item.Refine;
-                                dbItem.Element = item.Element;
-                                dbItem.ElementRefine = item.ElementRefine;
-                            }
-                            else
-                            {
-                                dbItem = new Rhisis.Database.Structures.Item()
-                                {
-                                    CharacterId = this.Player.PlayerComponent.Id,
-                                    CreatorId = item.CreatorId,
-                                    ItemId = item.Id,
-                                    ItemCount = item.Quantity,
-                                    ItemSlot = item.Slot,
-                                    Refine = item.Refine,
-                                    Element = item.Element,
-                                    ElementRefine = item.ElementRefine
-                                };
-
-                                character.Items.Add(dbItem);
-                            }
-                        }
+                        dbItem.ItemId = item.Id;
+                        dbItem.ItemCount = item.Quantity;
+                        dbItem.ItemSlot = item.Slot;
+                        dbItem.Refine = item.Refine;
+                        dbItem.Element = item.Element;
+                        dbItem.ElementRefine = item.ElementRefine;
                     }
+                    else
+                    {
+                        dbItem = new Rhisis.Database.Structures.Item()
+                        {
+                            CharacterId = this.Player.PlayerComponent.Id,
+                            CreatorId = item.CreatorId,
+                            ItemId = item.Id,
+                            ItemCount = item.Quantity,
+                            ItemSlot = item.Slot,
+                            Refine = item.Refine,
+                            Element = item.Element,
+                            ElementRefine = item.ElementRefine
+                        };
+
+                        character.Items.Add(dbItem);
+                    }
+                }
+
+                // Delete friends
+                foreach (var friendship in character.Friends)
+                {
+                    if (this.Player.FriendsComponent.Friends.ContainsKey(friendship.CharacterId) == false)
+                        character.Friends.Remove(friendship);
+                }
+
+                // Add or update friends
+                foreach (var friendship in this.Player.FriendsComponent.Friends)
+                {
+                    var dbFriend = character.Friends.FirstOrDefault(x => x.CharacterId == friendship.Key) ??
+                        new Friend()
+                    {
+                        CharacterId = friendship.Value.Id
+                    };
+
+                    character.Friends.Add(dbFriend);
                 }
 
                 db.SaveChanges();
@@ -191,6 +211,7 @@ namespace Rhisis.World
             }
 
             currentMap.Context.DeleteEntity(this.Player);
+            WorldServer.GlobalContext.DeleteEntity(this.Player);
         }
 
         /// <summary>

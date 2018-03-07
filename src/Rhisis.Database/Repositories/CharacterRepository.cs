@@ -26,7 +26,8 @@ namespace Rhisis.Database.Repositories
         {
             return base.GetQueryable()
                 .Include(x => x.User)
-                .Include(x => x.Items);
+                .Include(x => x.Items)
+                .Include(x => x.Friends);
         }
     }
 }

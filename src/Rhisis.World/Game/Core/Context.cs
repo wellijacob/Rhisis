@@ -74,6 +74,25 @@ namespace Rhisis.World.Game.Core
         }
 
         /// <summary>
+        /// Add an existing entity
+        /// </summary>
+        /// <param name="entity"></param>
+        /// <returns></returns>
+        public void AddEntity(IEntity entity)
+        {
+            if (!this._entities.TryAdd(entity.Id, entity))
+                return;
+
+            if (entity.Type == WorldEntityType.Player)
+            {
+                lock (_syncPlayersLock)
+                {
+                    this._playersEntities.Add(entity);
+                }
+            }
+        }
+
+        /// <summary>
         /// Deletes an entity.
         /// </summary>
         /// <param name="entity">Entity to delete</param>

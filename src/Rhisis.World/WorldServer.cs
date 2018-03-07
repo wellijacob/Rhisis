@@ -9,6 +9,9 @@ using Rhisis.Database.Exceptions;
 using Rhisis.World.Game;
 using Rhisis.World.ISC;
 using System.Collections.Generic;
+using Rhisis.World.Game.Core;
+using Rhisis.World.Game.Core.Interfaces;
+using Rhisis.World.Systems;
 
 namespace Rhisis.World
 {
@@ -60,6 +63,8 @@ namespace Rhisis.World
                 if (!context.DatabaseExists())
                     throw new RhisisDatabaseException($"The database '{databaseConfiguration.Database}' doesn't exists yet.");
             }
+            
+            PlayerDataSystem.LoadPlayerData();
 
             this.LoadResources();
             ConnectToISC(this.WorldConfiguration);

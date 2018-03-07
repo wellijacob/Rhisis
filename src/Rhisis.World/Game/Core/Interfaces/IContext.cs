@@ -31,6 +31,13 @@ namespace Rhisis.World.Game.Core.Interfaces
         TEntity CreateEntity<TEntity>() where TEntity : class, IEntity;
 
         /// <summary>
+        /// Add an existing entity
+        /// </summary>
+        /// <param name="entity"></param>
+        /// <returns></returns>
+        void AddEntity(IEntity entity);
+
+        /// <summary>
         /// Deletes an entity.
         /// </summary>
         /// <param name="entity">Entity to delete</param>
