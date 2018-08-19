@@ -146,7 +146,7 @@ namespace Rhisis.World.Game.Maps
                     if (this._cancellationToken.IsCancellationRequested)
                         break;
 
-                    double currentTime = Rhisis.Core.IO.Time.TimeInMilliseconds();
+                    double currentTime = Rhisis.Core.IO.UnixDateTime.ToMiliseconds();
                     double deltaTime = currentTime - previousTime;
                     previousTime = currentTime;
 

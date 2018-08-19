@@ -92,8 +92,8 @@ namespace Rhisis.World.Handlers
             {
                 Speed = WorldServer.Movers[client.Player.Object.ModelId].Speed,
                 DestinationPosition = client.Player.Object.Position.Clone(),
-                LastMoveTime = Time.GetElapsedTime(),
-                NextMoveTime = Time.GetElapsedTime() + 10
+                LastMoveTime = UnixDateTime.GetElapsedTime(),
+                NextMoveTime = UnixDateTime.GetElapsedTime() + 10
             };
 
             client.Player.Statistics = new StatisticsComponent(character);
