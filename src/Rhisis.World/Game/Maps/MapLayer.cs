@@ -70,11 +70,13 @@ namespace Rhisis.World.Game.Maps
                 Spawned = true,
                 Level = WorldServer.Movers[respawner.MoverId].Level
             };
+
             monster.TimerComponent = new TimerComponent
             {
-                LastMoveTimer = RandomHelper.LongRandom(8, 20)
+                LastMoveTime = RandomHelper.LongRandom(8, 20)
             };
-            monster.Behavior = WorldServer.MonsterBehaviors.GetBehavior(monster.Object.ModelId);
+
+            monster.Behavior = WorldServer.MonsterBehaviors.GetBehavior(respawner.MoverId);
             monster.Region = respawner;
         }
     }

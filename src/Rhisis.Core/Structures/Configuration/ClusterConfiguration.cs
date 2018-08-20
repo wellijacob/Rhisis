@@ -1,4 +1,5 @@
-﻿using System.Runtime.Serialization;
+﻿using Rhisis.Core.Structures.Game;
+using System.Runtime.Serialization;
 
 namespace Rhisis.Core.Structures.Configuration
 {

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Rhisis.Core.IO;
+using System;
 using System.Collections.Generic;
 using System.IO;
 
@@ -16,9 +17,9 @@ namespace Rhisis.Core.Resources
         /// <summary>
         /// Creates a new <see cref="RgnFile"/> instance.
         /// </summary>
-        /// <param name="filePath"></param>
-        public RgnFile(string filePath)
-            : base(filePath, FileMode.Open, FileAccess.Read)
+        /// <param name="path"></param>
+        public RgnFile(string path)
+            : base(path, FileMode.Open, FileAccess.Read)
         {
             this._elements = new List<RgnElement>();
             this.Read();
@@ -35,7 +36,7 @@ namespace Rhisis.Core.Resources
             {
                 string line = reader.ReadLine();
 
-                if (string.IsNullOrEmpty(line) || line.StartsWith("//"))
+                if (string.IsNullOrEmpty(line) || line.StartsWith(FileTokenScanner.SingleLineComment))
                     continue;
 
                 string[] data = line.Split(new[] { ' ', '\t' }, StringSplitOptions.RemoveEmptyEntries);
@@ -56,7 +57,7 @@ namespace Rhisis.Core.Resources
                     this._elements.Add(new RgnRegion3(data));
                 }
 
-                // add more...
+                //TODO: add more...
             }
         }
 

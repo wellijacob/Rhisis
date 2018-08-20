@@ -38,10 +38,10 @@ namespace Rhisis.Core.Resources
         /// <summary>
         /// Creates a new DefineFile instance.
         /// </summary>
-        /// <param name="filePath">Define file path</param>
-        public DefineFile(string filePath)
+        /// <param name="path">Define file path</param>
+        public DefineFile(string path)
         {
-            this._scanner = new FileTokenScanner(filePath, @"([\t# ])");
+            this._scanner = new FileTokenScanner(path, @"([\t# ])");
             this._defines = new Dictionary<string, object>();
 
             this.Read();

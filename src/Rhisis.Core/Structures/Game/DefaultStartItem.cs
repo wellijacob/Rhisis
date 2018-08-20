@@ -1,6 +1,6 @@
 ﻿using System.Runtime.Serialization;
 
-namespace Rhisis.Core.Structures
+namespace Rhisis.Core.Structures.Game
 {
     [DataContract]
     public class DefaultStartItem

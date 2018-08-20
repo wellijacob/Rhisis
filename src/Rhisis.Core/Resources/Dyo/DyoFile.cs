@@ -17,32 +17,39 @@ namespace Rhisis.Core.Resources.Dyo
         /// <summary>
         /// Creates a new <see cref="DyoFile"/> instance.
         /// </summary>
-        /// <param name="dyoFilePath">Dyo file path</param>
-        public DyoFile(string dyoFilePath)
-            : base(dyoFilePath, FileMode.Open, FileAccess.Read)
+        /// <param name="path">Dyo file path</param>
+        public DyoFile(string path)
+            : base(path, FileMode.Open, FileAccess.Read)
         {
             this._elements = new List<DyoElement>();
-            var memoryReader = new BinaryReader(this);
+            this.Read();
+        }
+
+        /// <summary>
+        /// Reads the <see cref="DyoFile"/> contents.
+        /// </summary>
+        private void Read()
+        {
+            var reader = new BinaryReader(this);
 
             while (true)
             {
                 DyoElement rgnElement = null;
-                int type = memoryReader.ReadInt32();
+                int type = reader.ReadInt32();
 
                 if (type == -1)
                     break;
-
                 if (type == 5)
                 {
                     rgnElement = new NpcDyoElement();
-                    rgnElement.Read(memoryReader);
+                    rgnElement.Read(reader);
                 }
 
                 if (rgnElement != null)
                     this._elements.Add(rgnElement);
             }
         }
-        
+
         /// <summary>
         /// Gets the specific elements.
         /// </summary>
@@ -57,9 +64,7 @@ namespace Rhisis.Core.Resources.Dyo
         protected override void Dispose(bool disposing)
         {
             if (disposing)
-            {
                 this._elements.Clear();
-            }
 
             base.Dispose(disposing);
         }

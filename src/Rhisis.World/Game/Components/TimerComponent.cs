@@ -2,6 +2,6 @@
 {
     public class TimerComponent
     {
-        public long LastMoveTimer { get; set; }
+        public long LastMoveTime { get; set; }
     }
 }

@@ -9,6 +9,8 @@ namespace Rhisis.World.Game.Core
     /// </summary>
     public abstract class SystemBase : ISystem
     {
+        protected const string UnableToExecuteMessage = "Unable to execute the system for player '{0}' from '{1}'. Raison: {3}.";
+
         /// <summary>
         /// Gets the context of the system.
         /// </summary>

@@ -64,7 +64,7 @@ namespace Rhisis.World
             if (Logger.IsTraceEnabled)
             {
                 Logger.Trace("Send {0} packet to {1}.",
-                    (PacketType)BitConverter.ToUInt32(packet.Buffer, 5),
+                    (PacketType)BitConverter.ToUInt32(packet.Buffer, FFPacket.HeaderSize),
                     this.RemoteEndPoint);
             }
 

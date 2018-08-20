@@ -19,7 +19,7 @@ namespace Rhisis.World.Packets
         {
             using (var packet = new FFPacket())
             {
-                packet.StartNewMergedPacket(player.Id, SnapshotType.ENVIRONMENTALL, 0x0000FF00);
+                packet.StartNewMergedPacket(player.Id, SnapshotType.ENVIRONMENTALL, PacketType.JOIN);
                 packet.Write(0); // Get weather by season
 
                 packet.StartNewMergedPacket(player.Id, SnapshotType.WORLD_READINFO);

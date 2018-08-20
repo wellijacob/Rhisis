@@ -24,9 +24,9 @@ namespace Rhisis.World.Game.Behaviors
         /// <param name="entity"></param>
         private void UpdateMoves(IMonsterEntity entity)
         {
-            if (entity.TimerComponent.LastMoveTimer <= UnixDateTime.ToSeconds())
+            if (UnixDateTime.NowToSeconds() >= entity.TimerComponent.LastMoveTime)
             {
-                entity.TimerComponent.LastMoveTimer = UnixDateTime.ToSeconds() + RandomHelper.LongRandom(8, 20);
+                entity.TimerComponent.LastMoveTime = UnixDateTime.NowToSeconds() + RandomHelper.LongRandom(8, 20);
                 entity.MovableComponent.DestinationPosition = entity.Region.GetRandomPosition();
                 entity.Object.Angle = Vector3.AngleBetween(entity.Object.Position, entity.MovableComponent.DestinationPosition);
                 WorldPacketFactory.SendDestinationPosition(entity);

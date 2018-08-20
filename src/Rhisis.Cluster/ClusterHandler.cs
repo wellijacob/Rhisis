@@ -6,6 +6,7 @@ using Rhisis.Core.Network;
 using Rhisis.Core.Network.Packets;
 using Rhisis.Core.Network.Packets.Cluster;
 using Rhisis.Core.Structures;
+using Rhisis.Core.Structures.Game;
 using Rhisis.Database;
 using Rhisis.Database.Entities;
 using System;
@@ -160,11 +161,11 @@ namespace Rhisis.Cluster
                     return;
                 }
 
-                // Check if given password match confirmation password.
+                // Check if given password match confirmation password (strange but the client need a server answer).
                 if (!string.Equals(pak.Password, pak.PasswordConfirmation, StringComparison.OrdinalIgnoreCase))
                 {
                     Logger.Warn($"Unable to delete character id '{pak.CharacterId}' for user '{pak.Username}' from {client.RemoteEndPoint}. " +
-                        "Reason: passwords entered do not match.");
+                        "Reason: bad confirmation password.");
                     ClusterPacketFactory.SendError(client, ErrorType.WRONG_PASSWORD);
                     return;
                 }
@@ -175,7 +176,16 @@ namespace Rhisis.Cluster
                 if (dbCharacter == null)
                 {
                     Logger.Warn($"[SECURITY] Unable to delete character id '{pak.CharacterId}' for user '{pak.Username}' from {client.RemoteEndPoint}. " +
-                        "Reason: user doesn't have any character with this id.");
+                        "Reason: no character with this id.");
+                    client.Disconnect();
+                    return;
+                }
+
+                // Check if character is owned by this user.
+                if (dbCharacter.UserId != dbUser.Id)
+                {
+                    Logger.Warn($"[SECURITY] Unable to delete character id '{pak.CharacterId}' for user '{pak.Username}' from {client.RemoteEndPoint}. " +
+                        "Reason: character is not owned by this user.");
                     client.Disconnect();
                     return;
                 }

@@ -36,9 +36,9 @@ namespace Rhisis.Core.Resources
         /// <summary>
         /// Creates a new <see cref="TextFile"/> instance.
         /// </summary>
-        /// <param name="filePath">File path</param>
-        public TextFile(string filePath)
-            : base(filePath, FileMode.Open, FileAccess.Read)
+        /// <param name="path">File path</param>
+        public TextFile(string path)
+            : base(path, FileMode.Open, FileAccess.Read)
         {
             this._texts = new Dictionary<string, string>();
             this.Read();

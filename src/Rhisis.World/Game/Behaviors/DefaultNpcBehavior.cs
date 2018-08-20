@@ -28,7 +28,7 @@ namespace Rhisis.World.Game.Behaviors
         /// <param name="npc">NPC Entity</param>
         private void UpdateOralText(INpcEntity npc)
         {
-            if (npc.Timers.LastSpeakTime <= UnixDateTime.ToSeconds())
+            if (npc.Timers.LastSpeakTime <= UnixDateTime.NowToSeconds())
             {
                 if (npc.Data != null && npc.Data.HasDialog && !string.IsNullOrEmpty(npc.Data.Dialog.OralText))
                 {
@@ -44,7 +44,7 @@ namespace Rhisis.World.Game.Behaviors
                         WorldPacketFactory.SendChatTo(npc, player, text);
                     }
 
-                    npc.Timers.LastSpeakTime = UnixDateTime.ToSeconds() + RandomHelper.Random(10, 15);
+                    npc.Timers.LastSpeakTime = UnixDateTime.NowToSeconds() + RandomHelper.Random(10, 15);
                 }
             }
         }

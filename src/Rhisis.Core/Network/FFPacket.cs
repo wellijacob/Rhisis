@@ -13,6 +13,7 @@ namespace Rhisis.Core.Network
     public class FFPacket : NetPacketStream
     {
         public const byte Header = 0x5E;
+        public const int HeaderSize = 5;
         
         private short _mergedPacketCount;
 
@@ -33,11 +34,11 @@ namespace Rhisis.Core.Network
         /// <summary>
         /// Creates a new FFPacket with a header.
         /// </summary>
-        /// <param name="packetHeader"></param>
-        public FFPacket(object packetHeader)
+        /// <param name="header"></param>
+        public FFPacket(object header)
             : this()
         {
-            this.WriteHeader(packetHeader);
+            this.WriteHeader(header);
         }
 
         /// <summary>
@@ -52,8 +53,8 @@ namespace Rhisis.Core.Network
         /// <summary>
         /// Write packet header.
         /// </summary>
-        /// <param name="packetHeader">FFPacket header</param>
-        public void WriteHeader(object packetHeader) => this.Write((uint)packetHeader);
+        /// <param name="header">FFPacket header</param>
+        public void WriteHeader(object header) => this.Write((uint)header);
 
         /// <summary>
         /// Write data into a packet.
@@ -133,13 +134,14 @@ namespace Rhisis.Core.Network
         /// <param name="moverId"></param>
         /// <param name="command"></param>
         /// <param name="mainCommand"></param>
-        public void StartNewMergedPacket(int moverId, object command, uint mainCommand)
+        public void StartNewMergedPacket(int moverId, object command, object mainCommand)
         {
+            //TODO: review this method. By usage guessing, name should be SetAsMergedPacket(type -> SNAPSHOT).
             var packet = (uint)command;
 
             if (this._mergedPacketCount == 0)
             {
-                this.Write((int)mainCommand);
+                this.Write((uint)mainCommand);
                 this.Write(0);
                 this.Write(++this._mergedPacketCount);
             }
@@ -159,6 +161,6 @@ namespace Rhisis.Core.Network
         /// </summary>
         /// <param name="moverId"></param>
         /// <param name="command"></param>
-        public void StartNewMergedPacket(int moverId, object command) => this.StartNewMergedPacket(moverId, command, 0xFFFFFF00);
+        public void StartNewMergedPacket(int moverId, object command) => this.StartNewMergedPacket(moverId, command, PacketType.SNAPSHOT);
     }
 }

@@ -30,7 +30,7 @@ namespace Rhisis.Core.IO
         /// Gets the date time in seconds from now.
         /// </summary>
         /// <returns></returns>
-        public static long ToSeconds()
+        public static long NowToSeconds()
         {
             return ToSeconds(DateTime.UtcNow);
         }
@@ -52,7 +52,7 @@ namespace Rhisis.Core.IO
         /// Gets the date time in milliseconds.
         /// </summary>
         /// <returns></returns>
-        public static double ToMiliseconds()
+        public static double NowToMiliseconds()
         {
             return ToMiliseconds(DateTime.UtcNow);
         }

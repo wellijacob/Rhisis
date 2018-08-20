@@ -296,7 +296,7 @@ namespace Rhisis.Core.Structures
         }
 
         /// <summary>
-        /// Get the angle between two vectors.
+        /// Get the angle between two vectors (in degree).
         /// </summary>
         /// <param name="a"></param>
         /// <param name="b"></param>
@@ -304,9 +304,8 @@ namespace Rhisis.Core.Structures
         public static float AngleBetween(Vector3 a, Vector3 b)
         {
             var dist = b - a;
-            float angle = (float)Math.Atan2(dist.X, -dist.Z);
+            float angle = MathHelper.ToDegree((float)Math.Atan2(dist.X, -dist.Z));
 
-            angle = MathHelper.ToDegree(angle);
             if (angle < 0)
                 angle += 360;
             else if (angle >= 360)

@@ -11,12 +11,14 @@ namespace Rhisis.World.Game.Components
         /// <summary>
         /// Gets the <see cref="ItemContainerComponent"/> max capacity.
         /// </summary>
+        /// <remarks>Eg. 40 slots avail on this container.</remarks>
         public int MaxCapacity { get; }
 
         /// <summary>
-        /// Gets the <see cref="ItemContainerComponent"/> max storage capacity.
+        /// Gets the <see cref="ItemContainerComponent"/> max managed capacity.
         /// </summary>
-        public int MaxStorageCapacity { get; }
+        /// <remarks>Eg. only the 20 firsts slots of 40 are managed for this container.</remarks>
+        public int MaxManagedCapacity { get; }
 
         /// <summary>
         /// Gets the list of items in this <see cref="ItemContainerComponent"/>.
@@ -33,10 +35,10 @@ namespace Rhisis.World.Game.Components
         /// <summary>
         /// Creates a new <see cref="ItemContainerComponent"/> instance.
         /// </summary>
-        public ItemContainerComponent(int maxCapacity, int maxStorageCapacity)
+        public ItemContainerComponent(int maxCapacity, int maxManagedCapacity)
         {
             this.MaxCapacity = maxCapacity;
-            this.MaxStorageCapacity = maxStorageCapacity;
+            this.MaxManagedCapacity = maxManagedCapacity;
             this.Items = new List<Item>(new Item[this.MaxCapacity]);
 
             for (var i = 0; i < this.MaxCapacity; i++)
@@ -49,14 +51,14 @@ namespace Rhisis.World.Game.Components
         }
 
         /// <summary>
-        /// Gets the valid items count
+        /// Gets the managed items count.
         /// </summary>
         /// <returns></returns>
         public int GetItemCount()
         {
             var count = 0;
 
-            for (var i = 0; i < MaxStorageCapacity; i++)
+            for (var i = 0; i < MaxManagedCapacity; i++)
             {
                 if (Items[i] != null && Items[i].Slot != -1)
                     count++;
@@ -91,12 +93,12 @@ namespace Rhisis.World.Game.Components
         }
 
         /// <summary>
-        /// Returs the position of an available slot.
+        /// Returs the position of an available managed slot.
         /// </summary>
         /// <returns></returns>
         public int GetAvailableSlot()
         {
-            for (var i = 0; i < MaxStorageCapacity; i++)
+            for (var i = 0; i < MaxManagedCapacity; i++)
             {
                 if (this.Items[i] != null && this.Items[i].Slot == -1)
                     return i;
@@ -106,17 +108,17 @@ namespace Rhisis.World.Game.Components
         }
 
         /// <summary>
-        /// Check if there is any available slots.
+        /// Check if there is any available managed slots.
         /// </summary>
         /// <returns></returns>
         public bool HasAvailableSlots() => this.GetAvailableSlot() != -1;
 
         /// <summary>
-        /// Creates an item in this item container.
+        /// Add an item into an available managed slot of this container.
         /// </summary>
         /// <param name="item"></param>
         /// <returns></returns>
-        public bool CreateItem(Item item)
+        public bool Add(Item item)
         {
             if (item?.Data == null)
                 return false;
@@ -134,7 +136,7 @@ namespace Rhisis.World.Game.Components
         }
 
         /// <summary>
-        /// Serialize the ItemContainer.
+        /// Serialize the all the container.
         /// </summary>
         /// <param name="packet"></param>
         public void Serialize(INetPacketStream packet)
