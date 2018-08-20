@@ -1,6 +1,7 @@
 ﻿using NLog;
 using Rhisis.Core.Common;
 using Rhisis.Core.Helpers;
+using Rhisis.Core.IO;
 using Rhisis.Core.Resources;
 using Rhisis.Core.Resources.Dyo;
 using Rhisis.Core.Structures.Game;
@@ -57,14 +58,16 @@ namespace Rhisis.World.Game.Maps
             this._mapPath = mapPath;
             this._layers = new List<IMapLayer>();
             this._regions = new List<IRegion>();
+            this._cancellationTokenSource = new CancellationTokenSource();
+            this._cancellationToken = this._cancellationTokenSource.Token;
         }
 
         /// <inheritdoc />
         public void LoadDyo()
         {
-            string dyo = Path.Combine(this._mapPath, this.Name + ".dyo");
+            string dyoPath = Path.Combine(this._mapPath, this.Name + ".dyo");
 
-            using (var dyoFile = new DyoFile(dyo))
+            using (var dyoFile = new DyoFile(dyoPath))
             {
                 IEnumerable<NpcDyoElement> npcElements = dyoFile.GetElements<NpcDyoElement>();
 
@@ -76,9 +79,9 @@ namespace Rhisis.World.Game.Maps
         /// <inheritdoc />
         public void LoadRgn()
         {
-            string rgn = Path.Combine(this._mapPath, this.Name + ".rgn");
+            string rgnPath = Path.Combine(this._mapPath, this.Name + ".rgn");
 
-            using (var rgnFile = new RgnFile(rgn))
+            using (var rgnFile = new RgnFile(rgnPath))
             {
                 IEnumerable<IRegion> monsterRegions = rgnFile.Elements
                         .Where(x => x is RgnRespawn7)
@@ -131,7 +134,17 @@ namespace Rhisis.World.Game.Maps
         /// <inheritdoc />
         public override void Update()
         {
-            // TODO
+            foreach (var entity in this.Entities)
+            {
+                foreach (var system in this.Systems)
+                {
+                    if (!(system is INotifiableSystem) && system.Match(entity))
+                        system.Execute(entity);
+                }
+            }
+
+            foreach (var mapLayer in this._layers)
+                mapLayer.Update();
         }
 
         /// <inheritdoc />
@@ -146,33 +159,23 @@ namespace Rhisis.World.Game.Maps
                     if (this._cancellationToken.IsCancellationRequested)
                         break;
 
-                    double currentTime = Rhisis.Core.IO.UnixDateTime.ToMiliseconds();
+                    double currentTime = UnixDateTime.NowToMiliseconds();
                     double deltaTime = currentTime - previousTime;
-                    previousTime = currentTime;
 
+                    previousTime = currentTime;
                     this.GameTime = deltaTime / 1000f;
 
                     try
                     {
                         lock (SyncRoot)
-                        {
-                            foreach (var entity in this.Entities)
-                            {
-                                foreach (var system in this.Systems)
-                                {
-                                    if (!(system is INotifiableSystem) && system.Match(entity))
-                                        system.Execute(entity);
-                                }
-                            }
-
-                            foreach (var mapLayer in this._layers)
-                                mapLayer.Update();
-                        }
+                            this.Update();
                     }
                     catch (Exception e)
                     {
                         Logger.Error(e);
+                        Logger.Debug(e.StackTrace);
                     }
+
                     await Task.Delay(delay, this._cancellationToken).ConfigureAwait(false);
                 }
             }, this._cancellationToken);
@@ -180,6 +183,13 @@ namespace Rhisis.World.Game.Maps
 
         /// <inheritdoc />
         public void StopUpdateTask() => this._cancellationTokenSource.Cancel();
+
+        /// <inheritdoc />
+        public override void Dispose()
+        {
+            this.StopUpdateTask();
+            base.Dispose();
+        }
 
         /// <summary>
         /// Creates a NPC.
@@ -201,8 +211,9 @@ namespace Rhisis.World.Game.Maps
                 Spawned = true,
                 Level = 1
             };
+
+            npc.Timers.LastSpeakTime = RandomHelper.Random(10, 15); //TODO: implement game constant.
             npc.Behavior = WorldServer.NpcBehaviors.GetBehavior(npc.Object.ModelId);
-            npc.Timers.LastSpeakTime = RandomHelper.Random(10, 15);
 
             if (WorldServer.Npcs.TryGetValue(npc.Object.Name, out NpcData npcData))
             {
@@ -212,7 +223,7 @@ namespace Rhisis.World.Game.Maps
                 {
                     npc.Shop = new ItemContainerComponent[npcData.Shop.Items.Length];
 
-                    for (var i = 0; i < npcData.Shop.Items.Length; i++)
+                    for (var i = 0; i < npc.Shop.Length; i++)
                     {
                         npc.Shop[i] = new ItemContainerComponent(100);
 
