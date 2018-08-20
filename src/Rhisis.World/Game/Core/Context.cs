@@ -7,7 +7,7 @@ namespace Rhisis.World.Game.Core
 {
     public abstract class Context : IContext
     {
-        protected static readonly object SyncRoot = new object();
+        protected readonly object SyncRoot = new object();
 
         private readonly IDictionary<int, IEntity> _entities;
         private readonly IList<ISystem> _systems;
@@ -37,7 +37,7 @@ namespace Rhisis.World.Game.Core
             var entity = Activator.CreateInstance(typeof(TEntity), this) as IEntity;
 
             if (entity == null)
-                throw new RhisisException($"An error occured while creating an entity of type {typeof(TEntity)}");
+                throw new RhisisException($"An error occured while creating an entity of type {typeof(TEntity)}.");
 
             lock (SyncRoot)
             {
@@ -74,7 +74,7 @@ namespace Rhisis.World.Game.Core
         public abstract void Update();
 
         /// <inheritdoc />
-        public void Dispose()
+        public virtual void Dispose()
         {
             this.Dispose(true);
             GC.SuppressFinalize(this);
