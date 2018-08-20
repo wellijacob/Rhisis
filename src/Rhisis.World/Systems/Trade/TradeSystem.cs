@@ -463,14 +463,14 @@ namespace Rhisis.World.Systems.Trade
                     item.ExtraUsed = 0;
                     newItem.ExtraUsed = 0;
 
-                    target.Inventory.CreateItem(newItem);
+                    target.Inventory.Add(newItem);
                 }
                 else
                 {
                     player.Inventory.Items.Remove(item);
                     item.ExtraUsed = 0;
                     
-                    target.Inventory.CreateItem(newItem);
+                    target.Inventory.Add(newItem);
                 }
             }
         }

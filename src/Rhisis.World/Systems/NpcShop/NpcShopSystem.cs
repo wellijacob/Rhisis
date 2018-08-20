@@ -172,7 +172,7 @@ namespace Rhisis.World.Systems.NpcShop
                     {
                         var item = new Item(e.ItemId, quantity, -1);
 
-                        if (player.Inventory.CreateItem(item))
+                        if (player.Inventory.Add(item))
                         {
                             player.PlayerData.Gold -= cost;
                             WorldPacketFactory.SendItemCreation(player, item);
@@ -197,7 +197,7 @@ namespace Rhisis.World.Systems.NpcShop
 
                     var item = new Item(e.ItemId, 1, -1);
 
-                    if (player.Inventory.CreateItem(item))
+                    if (player.Inventory.Add(item))
                     {
                         player.PlayerData.Gold -= cost;
                         WorldPacketFactory.SendItemCreation(player, item);
