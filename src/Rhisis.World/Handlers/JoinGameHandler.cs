@@ -14,6 +14,8 @@ using Rhisis.World.Game.Maps;
 using Rhisis.World.Packets;
 using Rhisis.World.Systems.Inventory;
 using Rhisis.World.Systems.Inventory.EventArgs;
+using System;
+using System.Linq;
 
 namespace Rhisis.World.Handlers
 {
@@ -21,71 +23,87 @@ namespace Rhisis.World.Handlers
     {
         private static readonly ILogger Logger = LogManager.GetCurrentClassLogger();
 
+        private const string UnableToJoinMessage = "Unable to join character '{0}' for user '{1}' from {2}. Reason: {3}.";
+        private const string UnableToJoinSecurityMessage = "[SECURITY] " + UnableToJoinMessage;
+
         [PacketHandler(PacketType.JOIN)]
         public static void OnJoin(WorldClient client, INetPacketStream packet)
         {
-            var joinPacket = new JoinPacket(packet);
-            Character character = null;
+            var pak = new JoinPacket(packet);
+            Character dbCharacter = null;
 
             using (var db = DatabaseService.GetContext())
             {
-                character = db.Characters.Get(joinPacket.PlayerId);
+                dbCharacter = db.Characters.Get(pak.PlayerId);
             }
 
-            if (character == null)
+            // Check if the character exist.
+            if (dbCharacter == null)
             {
-                // This is an hack attempt
+                Logger.Warn(UnableToJoinSecurityMessage, dbCharacter.Name, dbCharacter.Name,
+                    client.RemoteEndPoint, "character is not exist");
                 return;
             }
 
-            if (character.User.Authority <= 0)
+            // Check if given username is the real owner of this character.
+            if (!pak.Username.Equals(dbCharacter.User.Username, StringComparison.OrdinalIgnoreCase))
             {
-                // Account banned so he can't connect to the game.
+                Logger.Warn(UnableToJoinSecurityMessage, dbCharacter.Name, dbCharacter.Name, 
+                    client.RemoteEndPoint, "character is not owned by this user");
+                return;
+            }
+
+            // Check if the account is banned.
+            if (dbCharacter.User.Authority <= 0)
+            {
+                Logger.Warn(UnableToJoinMessage, dbCharacter.Name, dbCharacter.Name,
+                    client.RemoteEndPoint, "character is banned");
                 return;
             }
             
-            if (!WorldServer.Maps.TryGetValue(character.MapId, out IMapInstance map))
+            // Check if character's map is loaded.
+            if (!WorldServer.Maps.TryGetValue(dbCharacter.MapId, out IMapInstance map))
             {
-                Logger.Warn("Map with id '{0}' doesn't exist.", character.MapId);
-                // TODO: send error to client or go to default map ?
+                Logger.Warn(UnableToJoinMessage, dbCharacter.Name, dbCharacter.Name,
+                    client.RemoteEndPoint, $"map id '{dbCharacter.MapId}' of character is not found");
                 return;
             }
 
-            IMapLayer mapLayer = map.GetMapLayer(character.MapLayerId) ?? map.GetDefaultMapLayer();
+            IMapLayer mapLayer = map.GetMapLayer(dbCharacter.MapLayerId) ?? map.GetDefaultMapLayer();
 
-            // 1st: Create the player entity with the map context
+            // 1st: Create the player entity with the map context.
             client.Player = map.CreateEntity<PlayerEntity>();
 
-            // 2nd: create and initialize the components
+            // 2nd: create and initialize components.
             client.Player.Object = new ObjectComponent
             {
-                ModelId = character.Gender == 0 ? 11 : 12,
+                ModelId = dbCharacter.Gender == 0 ? 11 : 12, //TODO: implement game constants.
                 Type = WorldObjectType.Mover,
-                MapId = character.MapId,
+                MapId = dbCharacter.MapId,
                 LayerId = mapLayer.Id,
-                Position = new Vector3(character.PosX, character.PosY, character.PosZ),
-                Angle = character.Angle,
+                Position = new Vector3(dbCharacter.PosX, dbCharacter.PosY, dbCharacter.PosZ),
+                Angle = dbCharacter.Angle,
                 Size = 100,
-                Name = character.Name,
+                Name = dbCharacter.Name,
                 Spawned = false,
-                Level = character.Level
+                Level = dbCharacter.Level
             };
 
             client.Player.VisualAppearance = new VisualAppearenceComponent
             {
-                Gender = character.Gender,
-                SkinSetId = character.SkinSetId,
-                HairId = character.HairId,
-                HairColor = character.HairColor,
-                FaceId = character.FaceId,
+                Gender = dbCharacter.Gender,
+                SkinSetId = dbCharacter.SkinSetId,
+                HairId = dbCharacter.HairId,
+                HairColor = dbCharacter.HairColor,
+                FaceId = dbCharacter.FaceId,
             };
 
             client.Player.PlayerData = new PlayerDataComponent
             {
-                Id = character.Id,
-                Slot = character.Slot,
-                Gold = character.Gold,
-                Authority = (AuthorityType)character.User.Authority
+                Id = dbCharacter.Id,
+                Slot = dbCharacter.Slot,
+                Gold = dbCharacter.Gold,
+                Authority = (AuthorityType)dbCharacter.User.Authority
             };
 
             client.Player.MovableComponent = new MovableComponent
@@ -96,12 +114,12 @@ namespace Rhisis.World.Handlers
                 NextMoveTime = UnixDateTime.GetElapsedTime() + 10
             };
 
-            client.Player.Statistics = new StatisticsComponent(character);
+            client.Player.Statistics = new StatisticsComponent(dbCharacter);
             client.Player.Behavior = WorldServer.PlayerBehaviors.DefaultBehavior;
             client.Player.Connection = client;
 
             // Initialize the inventory
-            var inventoryEventArgs = new InventoryInitializeEventArgs(character.Items);
+            var inventoryEventArgs = new InventoryInitializeEventArgs(dbCharacter.Items);
             client.Player.NotifySystem<InventorySystem>(inventoryEventArgs);
             
             // 3rd: spawn the player
