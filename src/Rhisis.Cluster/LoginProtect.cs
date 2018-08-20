@@ -214,9 +214,9 @@
         /// <returns></returns>
         public static int GetNumPadToPassword(int idNumPad, int secretNum)
         {
-            int password = int.MaxValue;
+            int password = -1;
 
-            if (idNumPad <= 999 && secretNum <= 9999)
+            if (idNumPad <= 999 && secretNum >= 0 && secretNum <= 9999)
             {
                 int num1 = secretNum / 1000;
                 int num2 = (secretNum % 1000) / 100;
