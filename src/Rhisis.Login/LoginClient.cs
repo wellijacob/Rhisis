@@ -3,10 +3,8 @@ using Ether.Network.Packets;
 using NLog;
 using Rhisis.Core.Exceptions;
 using Rhisis.Core.Helpers;
-using Rhisis.Network.ISC.Structures;
 using Rhisis.Network;
 using Rhisis.Network.Packets;
-using Rhisis.Core.Structures.Configuration;
 using System;
 using System.Collections.Generic;
 
@@ -15,7 +13,6 @@ namespace Rhisis.Login
     public sealed class LoginClient : NetUser
     {
         private static readonly ILogger Logger = LogManager.GetCurrentClassLogger();
-        private LoginServer _loginServer;
 
         /// <summary>
         /// Gets the ID assigned to this session.
@@ -28,14 +25,14 @@ namespace Rhisis.Login
         public string Username { get; private set; }
 
         /// <summary>
-        /// Gets the list of connected clusters.
+        /// Check if the client is connected.
         /// </summary>
-        public IEnumerable<ClusterServerInfo> ClustersConnected => this._loginServer.ClustersConnected;
+        public bool IsConnected => !string.IsNullOrEmpty(this.Username);
 
         /// <summary>
-        /// Gets the login server's configuration.
+        /// Gets the Login server's reference.
         /// </summary>
-        public LoginConfiguration ServerConfiguration => this._loginServer.LoginConfiguration;
+        public ILoginServer LoginServer { get; private set; }
 
         /// <summary>
         /// Gets the remote end point (IP and port) for this client.
@@ -54,9 +51,9 @@ namespace Rhisis.Login
         /// Initialize the client.
         /// </summary>
         /// <param name="loginServer"></param>
-        public void Initialize(LoginServer loginServer)
+        public void Initialize(ILoginServer loginServer)
         {
-            this._loginServer = loginServer;
+            this.LoginServer = loginServer;
             this.RemoteEndPoint = this.Socket.RemoteEndPoint.ToString();
         }
 
@@ -65,7 +62,7 @@ namespace Rhisis.Login
         /// </summary>
         public void Disconnect()
         {
-            this._loginServer.DisconnectClient(this.Id);
+            this.LoginServer.DisconnectClient(this.Id);
             this.Dispose();
         }
 

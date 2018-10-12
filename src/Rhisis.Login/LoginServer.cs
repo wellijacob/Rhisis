@@ -12,14 +12,14 @@ using Rhisis.Network.ISC.Structures;
 using Rhisis.Network.Packets;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Rhisis.Login
 {
-    public sealed class LoginServer : NetServer<LoginClient>
+    public sealed class LoginServer : NetServer<LoginClient>, ILoginServer
     {
         private const string LoginConfigFile = "config/login.json";
         private const string DatabaseConfigFile = "config/database.json";
-
         private static readonly ILogger Logger = LogManager.GetCurrentClassLogger();
 
         /// <summary>
@@ -27,14 +27,10 @@ namespace Rhisis.Login
         /// </summary>
         public static ISCServer InterServer { get; private set; }
 
-        /// <summary>
-        /// Gets the login sever's configuration.
-        /// </summary>
-        public LoginConfiguration LoginConfiguration { get; private set; }
+        /// <inheritdoc />
+        public LoginConfiguration ServerConfiguration { get; private set; }
 
-        /// <summary>
-        /// Gets the list of the connected clusters.
-        /// </summary>
+        /// <inheritdoc />
         public IEnumerable<ClusterServerInfo> ClustersConnected => InterServer?.ClusterServers;
 
         /// <inheritdoc />
@@ -54,10 +50,10 @@ namespace Rhisis.Login
         private void LoadConfiguration()
         {
             Logger.Debug("Loading server configuration from '{0}'...", LoginConfigFile);
-            this.LoginConfiguration = ConfigurationHelper.Load<LoginConfiguration>(LoginConfigFile, true);
+            this.ServerConfiguration = ConfigurationHelper.Load<LoginConfiguration>(LoginConfigFile, true);
 
-            this.Configuration.Host = this.LoginConfiguration.Host;
-            this.Configuration.Port = this.LoginConfiguration.Port;
+            this.Configuration.Host = this.ServerConfiguration.Host;
+            this.Configuration.Port = this.ServerConfiguration.Port;
             this.Configuration.MaximumNumberOfConnections = 1000;
             this.Configuration.Backlog = 100;
             this.Configuration.BufferSize = 4096;
@@ -83,7 +79,7 @@ namespace Rhisis.Login
             DependencyContainer.Instance.Initialize().BuildServiceProvider();
 
             Logger.Info("Starting ISC server...");
-            InterServer = new ISCServer(this.LoginConfiguration.ISC);
+            InterServer = new ISCServer(this.ServerConfiguration.ISC);
             InterServer.Start();
 
             //TODO: Implement this log inside OnStarted method when will be available.
@@ -124,5 +120,14 @@ namespace Rhisis.Login
 
             base.Dispose(disposing);
         }
+
+        /// <inheritdoc />
+        public LoginClient GetClientByUsername(string username) 
+            => this.Clients.FirstOrDefault(x =>
+                x.IsConnected &&
+                x.Username.Equals(username, StringComparison.OrdinalIgnoreCase));
+
+        /// <inheritdoc />
+        public bool IsClientConnected(string username) => this.GetClientByUsername(username) != null;
     }
 }

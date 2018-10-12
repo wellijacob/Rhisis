@@ -3,13 +3,10 @@ using NLog;
 using Rhisis.Core.Common;
 using Rhisis.Core.DependencyInjection;
 using Rhisis.Core.Services;
-using Rhisis.Database;
-using Rhisis.Database.Entities;
 using Rhisis.Login.Packets;
 using Rhisis.Network;
 using Rhisis.Network.Packets;
 using Rhisis.Network.Packets.Login;
-using System;
 
 namespace Rhisis.Login
 {
@@ -29,19 +26,20 @@ namespace Rhisis.Login
         [PacketHandler(PacketType.CERTIFY)]
         public static void OnLogin(LoginClient client, INetPacketStream packet)
         {
+            var loginServerConfiguration = client.LoginServer.ServerConfiguration;
             var cryptographyService = DependencyContainer.Instance.Resolve<ICryptographyService>();
-            var certifyPacket = new CertifyPacket(packet, client.ServerConfiguration.PasswordEncryption);
+            var certifyPacket = new CertifyPacket(packet, loginServerConfiguration.PasswordEncryption);
             string password = null;
 
-            if (certifyPacket.BuildVersion != client.ServerConfiguration.BuildVersion)
+            if (certifyPacket.BuildVersion != loginServerConfiguration.BuildVersion)
             {
                 AuthenticationFailed(client, ErrorType.CERT_GENERAL, "bad client build version");
                 return;
             }
 
-            if (client.ServerConfiguration.PasswordEncryption)
+            if (loginServerConfiguration.PasswordEncryption)
             {
-                byte[] encryptionKey = cryptographyService.BuildEncryptionKeyFromString(client.ServerConfiguration.EncryptionKey, 16);
+                byte[] encryptionKey = cryptographyService.BuildEncryptionKeyFromString(loginServerConfiguration.EncryptionKey, 16);
 
                 password = cryptographyService.Decrypt(certifyPacket.EncryptedPassword, encryptionKey);
             }
@@ -62,26 +60,46 @@ namespace Rhisis.Login
                     AuthenticationFailed(client, ErrorType.FLYFF_PASSWORD, "bad password");
                     break;
                 case AuthenticationResult.AccountSuspended:
-                    // TODO
-                    break;
                 case AuthenticationResult.AccountTemporarySuspended:
                     // TODO
                     break;
                 case AuthenticationResult.Success:
-                    LoginPacketFactory.SendServerList(client, certifyPacket.Username, client.ClustersConnected);
+
+                    if (client.LoginServer.IsClientConnected(certifyPacket.Username))
+                    {
+                        AuthenticationFailed(client, ErrorType.DUPLICATE_ACCOUNT, "client already connected", false);
+                        return;
+                    }
+
+                    LoginPacketFactory.SendServerList(client, certifyPacket.Username, client.LoginServer.ClustersConnected);
                     client.SetClientUsername(certifyPacket.Username);
                     Logger.Info($"User '{client.Username}' logged succesfully from {client.RemoteEndPoint}.");
-                    break;
-                default:
                     break;
             }
         }
 
-        private static void AuthenticationFailed(LoginClient client, ErrorType error, string reason)
+        [PacketHandler(PacketType.CLOSE_EXISTING_CONNECTION)]
+        public static void OnCloseExistingConnection(LoginClient client, INetPacketStream packet)
+        {
+            var closeConnectionPacket = new CloseConnectionPacket(packet);
+            var otherConnectedClient = client.LoginServer.GetClientByUsername(closeConnectionPacket.Username);
+
+            if (otherConnectedClient == null)
+            {
+                Logger.Warn($"Cannot find user with username '{closeConnectionPacket.Username}'.");
+                return;
+            }
+
+            otherConnectedClient.Disconnect();
+        }
+
+        private static void AuthenticationFailed(LoginClient client, ErrorType error, string reason, bool disconnected = true)
         {
             Logger.Warn($"Unable to authenticate user from {client.RemoteEndPoint}. Reason: {reason}");
             LoginPacketFactory.SendLoginError(client, error);
-            client.Disconnect();
+
+            if (disconnected)
+               client.Disconnect();
         }
     }
 }
