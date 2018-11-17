@@ -7,8 +7,76 @@
         xmlns:local="clr-namespace:Rhisis.Database.Manager.Views"
         mc:Ignorable="d"
                    WindowStartupLocation="CenterScreen"
+                   ResizeMode="CanResizeWithGrip"
         Title="Rhisis Database Manager" Height="450" Width="800">
     <Grid>
-        
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <Menu Grid.Row="0">
+            <MenuItem Header="File">
+                <MenuItem Header="_Configure database"></MenuItem>
+                <Separator />
+                <MenuItem Header="_Quit"></MenuItem>
+            </MenuItem>
+            <MenuItem Header="View">
+                <MenuItem Header="_Language">
+                    <MenuItem Header="English" />
+                    <MenuItem Header="Français" />
+                </MenuItem>
+            </MenuItem>
+        </Menu>
+
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="0.4*" />
+                <ColumnDefinition />
+            </Grid.ColumnDefinitions>
+
+            <Grid Grid.Column="0" Margin="8">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+
+                <StackPanel Grid.Row="0" Margin="0,4">
+                    <Button Margin="0,4">Add account</Button>
+                    <TextBox Margin="0,4">search</TextBox>
+                </StackPanel>
+
+                <ListBox Grid.Row="1">
+                    <ListBoxItem>test</ListBoxItem>
+                    <ListBoxItem>test</ListBoxItem>
+                    <ListBoxItem>test</ListBoxItem>
+                    <ListBoxItem>test</ListBoxItem>
+                    <ListBoxItem>test</ListBoxItem>
+                </ListBox>
+                
+            </Grid>
+
+            <StackPanel Grid.Column="1" Margin="8">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition />
+                        <ColumnDefinition />
+                    </Grid.ColumnDefinitions>
+
+                    <TextBlock Grid.Column="0" Text="Account informations" FontSize="24" />
+                    <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Right">
+                        <Button Margin="4,0">Edit</Button>
+                        <Button Margin="4,0">Delete</Button>
+                    </StackPanel>
+                </Grid>
+            </StackPanel>
+            
+        </Grid>
+
+        <StatusBar Grid.Row="2">
+            <TextBlock Text="DATABASE_STATUS" />
+        </StatusBar>
+
     </Grid>
 </metro:MetroWindow>
