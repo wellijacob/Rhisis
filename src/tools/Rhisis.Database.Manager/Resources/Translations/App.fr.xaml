@@ -1,0 +1,12 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:sys="clr-namespace:System;assembly=mscorlib">
+
+    <!-- General -->
+    <sys:String x:Key="Ok">OK</sys:String>
+    <sys:String x:Key="Cancel">Annuler</sys:String>
+    <sys:String x:Key="Close">Fermer</sys:String>
+    <sys:String x:Key="NotImplementedTitle">Non disponible</sys:String>
+    <sys:String x:Key="NotImplementedMessage">Cette fonctionnalité n'est pas encore disponible.</sys:String>
+
+</ResourceDictionary>
