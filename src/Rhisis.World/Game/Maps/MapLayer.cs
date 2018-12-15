@@ -136,6 +136,7 @@ namespace Rhisis.World.Game.Maps
             };
             monster.Behavior = behaviors.MonsterBehaviors.GetBehavior(monster.Object.ModelId);
             monster.Region = respawner;
+            monster.Data = moverData;
 
             respawner.Entities.Add(monster);
         }

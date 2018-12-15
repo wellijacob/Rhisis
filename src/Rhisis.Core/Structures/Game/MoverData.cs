@@ -35,6 +35,12 @@ namespace Rhisis.Core.Structures.Game
         [DataMember(Name = "dwFilghtLevel")]
         public int FlightLevel { get; set; }
 
+        [DataMember(Name = "dwAtkMin")]
+        public int AttackMin { get; set; }
+
+        [DataMember(Name = "dwAtkMax")]
+        public int AttackMax { get; set; }
+
         public override string ToString() => this.Name;
     }
 }

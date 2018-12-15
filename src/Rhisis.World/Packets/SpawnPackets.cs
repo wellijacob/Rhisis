@@ -61,7 +61,7 @@ namespace Rhisis.World.Packets
                 packet.Write(player.PlayerData.Id);
                 packet.Write((byte)1); // Job
 
-                packet.Write((short) player.Statistics.Strenght);
+                packet.Write((short) player.Statistics.Strength);
                 packet.Write((short) player.Statistics.Stamina);
                 packet.Write((short) player.Statistics.Dexterity);
                 packet.Write((short) player.Statistics.Intelligence);
@@ -253,7 +253,7 @@ namespace Rhisis.World.Packets
                     packet.Write((byte)playerEntity.VisualAppearance.FaceId);
                     packet.Write(playerEntity.PlayerData.Id);
                     packet.Write((byte)1);
-                    packet.Write((short)playerEntity.Statistics.Strenght); // STR
+                    packet.Write((short)playerEntity.Statistics.Strength); // STR
                     packet.Write((short)playerEntity.Statistics.Stamina); // STA
                     packet.Write((short)playerEntity.Statistics.Dexterity); // DEX
                     packet.Write((short)playerEntity.Statistics.Intelligence); // INT

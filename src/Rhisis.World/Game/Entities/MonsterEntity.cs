@@ -1,4 +1,5 @@
-﻿using Rhisis.World.Game.Behaviors;
+﻿using Rhisis.Core.Structures.Game;
+using Rhisis.World.Game.Behaviors;
 using Rhisis.World.Game.Components;
 using Rhisis.World.Game.Core;
 using Rhisis.World.Game.Maps.Regions;
@@ -36,6 +37,9 @@ namespace Rhisis.World.Game.Entities
 
         /// <inheritdoc />
         public HealthComponent Health { get; set; }
+
+        /// <inheritdoc />
+        public MoverData Data { get; set; }
 
         /// <summary>
         /// Creates a new <see cref="MonsterEntity"/> instance.

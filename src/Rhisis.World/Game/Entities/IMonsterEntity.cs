@@ -1,4 +1,5 @@
-﻿using Rhisis.World.Game.Behaviors;
+﻿using Rhisis.Core.Structures.Game;
+using Rhisis.World.Game.Behaviors;
 using Rhisis.World.Game.Components;
 using Rhisis.World.Game.Core;
 using Rhisis.World.Game.Maps.Regions;
@@ -21,5 +22,10 @@ namespace Rhisis.World.Game.Entities
         /// Gets the monster's timer component.
         /// </summary>
         TimerComponent TimerComponent { get; set; }
+
+        /// <summary>
+        /// Gets or sets the monster's mover data.
+        /// </summary>
+        MoverData Data { get; set; }
     }
 }
