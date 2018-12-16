@@ -47,14 +47,14 @@ namespace Rhisis.World.Systems.Battle
                 return;
             }
 
-            int attackDamages = BattleHelper.GetMeeleAttackDamages(attacker, e.Target);
+            AttackResult meleeAttackResult = BattleHelper.GetMeeleAttackDamages(attacker, e.Target);
 
-            Logger.Debug($"{attacker.Object.Name} inflicted {attackDamages} to {e.Target.Object.Name}");
+            Logger.Debug($"{attacker.Object.Name} inflicted {meleeAttackResult.Damages} to {e.Target.Object.Name}");
 
             if (!(attacker is IPlayerEntity player))
                 return;
 
-            WorldPacketFactory.SendAddDamage(player, e.Target, attacker, AttackFlags.AF_GENERIC, attackDamages);
+            WorldPacketFactory.SendAddDamage(player, e.Target, attacker, meleeAttackResult.Flags, meleeAttackResult.Damages);
         }
     }
 }

@@ -1,7 +1,6 @@
 ﻿using Rhisis.Core.Data;
 using Rhisis.Core.Helpers;
-using Rhisis.Core.Structures.Game;
-using Rhisis.World.Game.Core;
+using Rhisis.World.Game.Common;
 using Rhisis.World.Game.Entities;
 using Rhisis.World.Game.Structures;
 using Rhisis.World.Systems.Inventory;
@@ -19,7 +18,7 @@ namespace Rhisis.World.Systems.Battle
         /// <param name="attacker">Attacker entity</param>
         /// <param name="defender">Defender entity</param>
         /// <returns>Damages</returns>
-        public static int GetMeeleAttackDamages(IEntity attacker, IEntity defender)
+        public static AttackResult GetMeeleAttackDamages(ILivingEntity attacker, ILivingEntity defender)
         {
             var damages = 0;
 
@@ -42,7 +41,13 @@ namespace Rhisis.World.Systems.Battle
                 damages = RandomHelper.Random(monster.Data.AttackMin, monster.Data.AttackMax);
             }
 
-            return damages > 0 ? damages : 0;
+            damages -= GetDefense(attacker, defender);
+
+            return new AttackResult
+            {
+                Damages = damages > 0 ? damages : 0,
+                Flags = AttackFlags.AF_GENERIC
+            };
         }
 
         public static int GetWeaponAttackDamages(WeaponType weaponType, IPlayerEntity player)
@@ -98,7 +103,13 @@ namespace Rhisis.World.Systems.Battle
             return (int)(attribute * jobFactor + levelFactor);
         }
 
-        public static int MulDiv(int number, int numerator, int denominator)
+        public static int GetDefense(ILivingEntity attacker, ILivingEntity defender)
+        {
+            return 0;
+        }
+
+        // TODO: move this to utility
+        private static int MulDiv(int number, int numerator, int denominator)
         {
             return (int)(((long)number * numerator) / denominator);
         }
