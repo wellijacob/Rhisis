@@ -13,43 +13,11 @@ namespace Rhisis.World.Systems.Battle
     public static class BattleHelper
     {
         /// <summary>
-        /// Gets the melee damages inflicted by an attacker to a defender.
+        /// Gets the weapon attack damages based on player's statistics.
         /// </summary>
-        /// <param name="attacker">Attacker entity</param>
-        /// <param name="defender">Defender entity</param>
-        /// <returns>Damages</returns>
-        public static AttackResult GetMeeleAttackDamages(ILivingEntity attacker, ILivingEntity defender)
-        {
-            var damages = 0;
-
-            if (attacker is IPlayerEntity player)
-            {
-                Item rightWeapon = player.Inventory.GetItem(x => x.Slot == InventorySystem.RightWeaponSlot);
-
-                if (rightWeapon == null)
-                    rightWeapon = InventorySystem.Hand;
-
-                // TODO: GetDamagePropertyFactor()
-                int weaponAttack = GetWeaponAttackDamages(rightWeapon.Data.WeaponType, player);
-                int weaponMinAbility = rightWeapon.Data.AbilityMin * 2 + weaponAttack;
-                int weaponMaxAbility = rightWeapon.Data.AbilityMax * 2 + weaponAttack;
-
-                damages = RandomHelper.Random(weaponMinAbility, weaponMaxAbility);
-            }
-            else if (attacker is IMonsterEntity monster)
-            {
-                damages = RandomHelper.Random(monster.Data.AttackMin, monster.Data.AttackMax);
-            }
-
-            damages -= GetDefense(attacker, defender);
-
-            return new AttackResult
-            {
-                Damages = damages > 0 ? damages : 0,
-                Flags = AttackFlags.AF_GENERIC
-            };
-        }
-
+        /// <param name="weaponType">Weapon type</param>
+        /// <param name="player">Player</param>
+        /// <returns></returns>
         public static int GetWeaponAttackDamages(WeaponType weaponType, IPlayerEntity player)
         {
             float attribute = 0f;
@@ -101,11 +69,6 @@ namespace Rhisis.World.Systems.Battle
             }
 
             return (int)(attribute * jobFactor + levelFactor);
-        }
-
-        public static int GetDefense(ILivingEntity attacker, ILivingEntity defender)
-        {
-            return 0;
         }
 
         // TODO: move this to utility

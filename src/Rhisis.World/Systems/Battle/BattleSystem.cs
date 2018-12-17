@@ -47,7 +47,7 @@ namespace Rhisis.World.Systems.Battle
                 return;
             }
 
-            AttackResult meleeAttackResult = BattleHelper.GetMeeleAttackDamages(attacker, e.Target);
+            AttackResult meleeAttackResult = new MeleeAttackArbiter(attacker, e.Target).OnDamage();
 
             Logger.Debug($"{attacker.Object.Name} inflicted {meleeAttackResult.Damages} to {e.Target.Object.Name}");
 
